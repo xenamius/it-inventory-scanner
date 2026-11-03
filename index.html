@@ -22,7 +22,7 @@ const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
 let qr=null,running=false; const el=id=>document.getElementById(id); const status=s=>el('status').textContent=s;
 async function stop(){if(qr&&running){try{await qr.stop()}catch(e){}running=false}el('start').hidden=false;el('stop').hidden=true}
 async function start(){if(!window.Html5Qrcode){status('Библиотека сканера не загрузилась. Проверь интернет.');return}
-try{qr=qr||new Html5Qrcode('reader');await qr.start({facingMode:'environment'}, {fps:10,qrbox:{width:250,height:170}}, async text=>{el('serial').value=text;status('Считано: '+text+'. Проверь правильность серийника.');await stop()});running=true;el('start').hidden=true;el('stop').hidden=false;status('Наведи камеру на заводской штрихкод.')}
+try{qr=qr||new Html5Qrcode('reader');await qr.start({facingMode:'environment'}, {fps:10,qrbox:{width:250,height:250}}, async text=>{el('serial').value=text;status('Считано: '+text+'. Проверь правильность серийника.');await stop()});running=true;el('start').hidden=true;el('stop').hidden=false;status('Наведи камеру на заводской штрихкод.')}
 catch(e){status('Не удалось открыть камеру: '+e.message+'. Можно ввести серийник вручную.')}}
 el('start').onclick=start;el('stop').onclick=stop;
 el('save').onclick=async()=>{const serial=el('serial').value.trim();if(serial.length<3){alert('Укажи серийный номер (минимум 3 символа)');return}
