@@ -3,10 +3,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1">
-
-<title>IT Inventory — сканер</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>IT Inventory — Scanner</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -17,9 +15,7 @@
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0 auto;
@@ -29,10 +25,7 @@ body {
   max-width: 560px;
 }
 
-h1 {
-  font-size: 23px;
-  margin: 6px 0;
-}
+h1 { font-size: 23px; margin: 6px 0; }
 
 p {
   color: #aab4be;
@@ -51,8 +44,8 @@ p {
 label {
   display: block;
   margin: 11px 0 5px;
-  font-weight: 600;
   font-size: 13px;
+  font-weight: 600;
   color: #d1dae1;
 }
 
@@ -61,7 +54,7 @@ input, select, textarea {
   background: #11171d;
   border: 1px solid #48535f;
   border-radius: 10px;
-  color: #fff;
+  color: white;
   padding: 12px;
   font-size: 16px;
 }
@@ -69,43 +62,34 @@ input, select, textarea {
 textarea {
   resize: vertical;
   min-height: 72px;
-  overflow-wrap: anywhere;
 }
 
 button {
-  font: 600 16px system-ui;
+  width: 100%;
+  padding: 13px 16px;
+  margin: 5px 0;
   border: 0;
   border-radius: 11px;
-  padding: 13px 16px;
-  width: 100%;
-  cursor: pointer;
   background: #4a89d1;
   color: white;
-  margin: 5px 0;
+  font: 600 16px system-ui;
+  cursor: pointer;
 }
 
-button.secondary {
-  background: #34404c;
-}
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
+button.secondary { background: #34404c; }
+button:disabled { opacity: .5; }
 
 #reader {
-  overflow: hidden;
-  border-radius: 12px;
   background: #080b0f;
+  border-radius: 12px;
+  overflow: hidden;
   position: relative;
-  transition: outline-color .12s, box-shadow .12s;
 }
 
-/* Жёлтая рамка после успешного сканирования */
 #reader.scan-success {
   outline: 4px solid #ffcc00;
   outline-offset: -4px;
-  box-shadow: 0 0 22px rgba(255, 204, 0, .55);
+  box-shadow: 0 0 22px rgba(255,204,0,.55);
 }
 
 #scan-indicator {
@@ -114,16 +98,31 @@ button:disabled {
   color: #111;
   font-weight: 700;
   text-align: center;
-  padding: 10px;
   border-radius: 10px;
+  padding: 10px;
   margin-top: 10px;
 }
 
-#scan-indicator.visible {
-  display: block;
+#scan-indicator.visible { display: block; }
+
+.modes {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
 }
 
-#status, #scan-note {
+.modes button {
+  flex: 1;
+  font-size: 14px;
+  background: #34404c;
+}
+
+.modes button.active {
+  background: #eabf31;
+  color: #111;
+}
+
+#status {
   font-size: 13px;
   color: #aab4be;
   min-height: 18px;
@@ -138,29 +137,20 @@ small {
 
 #result-panel {
   border: 1px solid #526e87;
+  background: #16232e;
   border-radius: 12px;
   padding: 12px;
   margin-top: 12px;
-  background: #16232e;
 }
 
-#format {
-  font-weight: 700;
-  color: #9bc6ff;
-}
-
-#warn {
-  color: #f9cb84;
-  font-size: 13px;
-  margin-top: 8px;
-}
+#format { color: #9bc6ff; font-weight: 700; }
+#warn { color: #f9cb84; font-size: 13px; margin-top: 8px; }
 </style>
 </head>
 
 <body>
-
 <h1>📷 IT Inventory</h1>
-<p>Серийные номера · штрихкоды и QR-коды</p>
+<p>Сканер оборудования · QR и штрихкоды</p>
 
 <div class="card">
 
@@ -168,6 +158,15 @@ small {
 
   <div id="scan-indicator">
     ✓ Код распознан!
+  </div>
+
+  <div class="modes">
+    <button id="mode-normal" class="active">
+      Обычный
+    </button>
+    <button id="mode-aim">
+      🎯 Прицел
+    </button>
   </div>
 
   <button id="start">
@@ -183,20 +182,16 @@ small {
   </button>
 
   <div id="status" role="status">
-    Разреши доступ к камере при запросе.
+    Разреши доступ к камере.
   </div>
 
   <div id="result-panel" hidden>
 
     <div>
-      Формат:
-      <span id="format">—</span>
+      Формат: <span id="format">—</span>
     </div>
 
-    <label for="raw">
-      Считанные данные (без изменений)
-    </label>
-
+    <label for="raw">Считанные данные</label>
     <textarea id="raw" readonly></textarea>
 
     <div id="warn"></div>
@@ -212,31 +207,21 @@ small {
   </div>
 
   <small>
-    Проверь, что считан именно S/N,
-    а не артикул, модель или соседний код.
-    Буквы автоматически не удаляются.
+    В режиме «Прицел» помести нужный код
+    целиком в центральную область.
+    В обычном режиме сканируется весь кадр.
   </small>
 
 </div>
 
 <div class="card">
 
-  <label for="serial">
-    Серийный номер *
-  </label>
+  <label for="serial">Серийный номер *</label>
+  <input id="serial"
+         maxlength="100"
+         placeholder="Сканируй или введи вручную">
 
-  <input
-    id="serial"
-    placeholder="Сканируй или введи вручную"
-    maxlength="100"
-    autocomplete="off"
-    required
-  >
-
-  <label for="type">
-    Тип оборудования
-  </label>
-
+  <label for="type">Тип оборудования</label>
   <select id="type">
     <option>ПК</option>
     <option>Монитор</option>
@@ -247,46 +232,28 @@ small {
     <option>Другое</option>
   </select>
 
-  <label for="brand">
-    Производитель *
-  </label>
-
+  <label for="brand">Производитель *</label>
   <select id="brand">
-    <option value="DELL">DELL</option>
-    <option value="HP">HP</option>
-    <option value="LENOVO">LENOVO</option>
-    <option value="ACER">ACER</option>
-    <option value="ASUS">ASUS</option>
+    <option>DELL</option>
+    <option>HP</option>
+    <option>LENOVO</option>
+    <option>ACER</option>
+    <option>ASUS</option>
   </select>
 
-  <label for="model">
-    Модель (необязательно)
-  </label>
+  <label for="model">Модель</label>
+  <input id="model"
+         maxlength="100"
+         placeholder="Например, Latitude 5420">
 
-  <input
-    id="model"
-    placeholder="Например, Latitude 5420"
-    maxlength="100"
-  >
-
-  <label for="room">
-    Кабинет
-  </label>
-
-  <input
-    id="room"
-    placeholder="Например, 305"
-    maxlength="50"
-  >
+  <label for="room">Кабинет</label>
+  <input id="room"
+         maxlength="50"
+         placeholder="Например, 305">
 
   <button id="save">
     ✅ Сохранить в общий журнал
   </button>
-
-  <small>
-    После сохранения бот пришлёт подтверждение.
-    Для следующего устройства открой сканер снова.
-  </small>
 
 </div>
 
@@ -294,23 +261,26 @@ small {
 'use strict';
 
 const tg = window.Telegram?.WebApp;
-
 tg?.ready();
 tg?.expand();
 
 const el = id => document.getElementById(id);
-
 const setStatus = text => {
   el('status').textContent = text;
 };
 
+const delay = ms =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
 let qr = null;
 let running = false;
-let starting = false;
+let busy = false;
 let stopping = false;
-let lastScan = null;
-let torchEnabled = false;
 let scanCompleted = false;
+let torchEnabled = false;
+let lastScan = null;
+let mode = 'normal';
+let scanSession = 0;
 
 const formats = [
   'QR_CODE',
@@ -320,103 +290,138 @@ const formats = [
   'DATA_MATRIX'
 ];
 
-/* =====================================
-   ЖЁЛТАЯ РАМКА
-===================================== */
+/* -----------------------------
+   ИНДИКАТОР РАСПОЗНАВАНИЯ
+----------------------------- */
 
-function showScanIndicator() {
+function showIndicator() {
   el('reader').classList.add('scan-success');
   el('scan-indicator').classList.add('visible');
 }
 
-function hideScanIndicator() {
+function hideIndicator() {
   el('reader').classList.remove('scan-success');
   el('scan-indicator').classList.remove('visible');
 }
 
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+/* -----------------------------
+   РЕЖИМЫ СКАНИРОВАНИЯ
+----------------------------- */
+
+function updateModeButtons() {
+  el('mode-normal').classList.toggle(
+    'active', mode === 'normal'
+  );
+
+  el('mode-aim').classList.toggle(
+    'active', mode === 'aim'
+  );
+
+  el('mode-normal').disabled = busy;
+  el('mode-aim').disabled = busy;
 }
 
-/* =====================================
-   КНОПКИ КАМЕРЫ
-===================================== */
+async function changeMode(newMode) {
+  if (busy || mode === newMode) return;
 
-function stopButtons(isRunning) {
-  el('start').hidden = isRunning;
-  el('stop').hidden = !isRunning;
+  const wasRunning = running;
+
+  busy = true;
+  updateModeButtons();
+
+  try {
+    if (wasRunning) {
+      await stopCamera();
+    }
+
+    mode = newMode;
+    hideIndicator();
+
+  } finally {
+    busy = false;
+    updateModeButtons();
+  }
+
+  if (wasRunning) {
+    await startCamera();
+  } else {
+    setStatus(
+      mode === 'aim'
+        ? 'Режим «Прицел» выбран.'
+        : 'Обычный режим выбран.'
+    );
+  }
 }
 
-/* =====================================
-   ФОНАРИК
-===================================== */
+el('mode-normal').onclick = () =>
+  changeMode('normal');
 
-function updateTorchButton() {
-  const button = el('torch');
+el('mode-aim').onclick = () =>
+  changeMode('aim');
 
-  button.textContent = torchEnabled
+/* -----------------------------
+   ОБЛАСТЬ ПРИЦЕЛА
+----------------------------- */
+
+function aimBox(width, height) {
+  const minSide = Math.min(width, height);
+
+  // Прицел занимает 65% короткой стороны.
+  const side = Math.max(
+    50,
+    Math.floor(minSide * 0.65)
+  );
+
+  return {
+    width: Math.min(side, width - 2),
+    height: Math.min(side, height - 2)
+  };
+}
+
+/* -----------------------------
+   УПРАВЛЕНИЕ ФОНАРИКОМ
+----------------------------- */
+
+function updateTorch() {
+  el('torch').textContent = torchEnabled
     ? '🔦 Выключить фонарик'
     : '🔦 Включить фонарик';
 }
 
-function detectTorch() {
-  const button = el('torch');
+function showTorchButton() {
+  // Не скрываем кнопку по capabilities:
+  // на iPhone Telegram фонарик уже работает.
+  el('torch').hidden = false;
+  el('torch').disabled = false;
+}
 
+function resetTorch() {
   torchEnabled = false;
-  updateTorchButton();
-
-  if (!qr || !running) {
-    button.hidden = true;
-    button.disabled = true;
-    return;
-  }
-
-  // На iPhone внутри Telegram сведения о
-  // поддержке фонарика могут отсутствовать,
-  // хотя само переключение работает.
-  button.hidden = false;
-  button.disabled = false;
-
-  try {
-    const caps = qr.getRunningTrackCapabilities();
-
-    console.log(
-      'Поддержка фонарика:',
-      caps.torch
-    );
-
-  } catch (e) {
-    console.log(
-      'Проверка фонарика недоступна:',
-      e
-    );
-  }
+  el('torch').hidden = true;
+  el('torch').disabled = true;
+  updateTorch();
 }
 
 el('torch').onclick = async () => {
-  if (!qr || !running || stopping) return;
+  if (!qr || !running || stopping || busy) return;
 
   const button = el('torch');
-  const nextState = !torchEnabled;
+  const next = !torchEnabled;
 
   button.disabled = true;
 
   try {
     await qr.applyVideoConstraints({
-      advanced: [
-        { torch: nextState }
-      ]
+      advanced: [{ torch: next }]
     });
 
-    torchEnabled = nextState;
-    updateTorchButton();
+    torchEnabled = next;
+    updateTorch();
 
   } catch (e) {
-    console.error('Ошибка фонарика:', e);
-
     setStatus(
-      'Не удалось переключить фонарик. ' +
-      'Telegram может ограничивать эту функцию.'
+      'Не удалось переключить фонарик: ' +
+      String(e?.message || e)
     );
 
   } finally {
@@ -424,40 +429,45 @@ el('torch').onclick = async () => {
   }
 };
 
-/* =====================================
-   ОСТАНОВКА КАМЕРЫ
-===================================== */
+/* -----------------------------
+   КНОПКИ КАМЕРЫ
+----------------------------- */
 
-async function stop() {
+function updateCameraButtons() {
+  el('start').hidden = running;
+  el('stop').hidden = !running;
+}
+
+/* -----------------------------
+   ОСТАНОВКА КАМЕРЫ
+----------------------------- */
+
+async function stopCamera() {
   if (!qr || !running || stopping) return;
 
   stopping = true;
 
+  // Старые события распознавания игнорируем.
+  scanSession++;
+
   try {
     await qr.stop();
-
   } catch (e) {
     console.warn('Camera stop:', e);
+  } finally {
+    running = false;
+    stopping = false;
+
+    resetTorch();
+    updateCameraButtons();
   }
-
-  running = false;
-  stopping = false;
-
-  stopButtons(false);
-
-  torchEnabled = false;
-
-  el('torch').hidden = true;
-  el('torch').disabled = true;
-
-  updateTorchButton();
 }
 
-/* =====================================
-   РЕЗУЛЬТАТ СКАНИРОВАНИЯ
-===================================== */
+/* -----------------------------
+   РЕЗУЛЬТАТ
+----------------------------- */
 
-function showScan(text, result) {
+function showResult(text, result) {
   const format =
     result?.result?.format?.formatName ||
     'Не определён';
@@ -477,284 +487,218 @@ function showScan(text, result) {
   const suspicious =
     /[\r\n\t\x00-\x1F]/.test(s) ||
     s.length > 100 ||
-    /https?:\/\//i.test(s) ||
-    /\]([A-Za-z])\d/.test(s.slice(0, 3));
+    /https?:\/\//i.test(s);
 
   el('warn').textContent = suspicious
-    ? '⚠️ В коде есть дополнительные данные или служебные символы. Проверь серийник перед сохранением.'
-    : 'Проверь текст: это действительно серийный номер устройства?';
+    ? '⚠️ Код содержит дополнительные данные. Проверь серийник.'
+    : 'Проверь, что это серийный номер.';
 
   el('apply').disabled =
-    s.length > 100 || s.length < 3;
+    s.length < 3 || s.length > 100;
 
   setStatus(
-    'Код считан. Формат: ' +
-    format +
-    '. Подтверди содержимое ниже.'
+    'Код считан. Формат: ' + format
   );
 }
 
-/* =====================================
-   ЗАПУСК СКАНЕРА
-===================================== */
+/* -----------------------------
+   ЗАПУСК КАМЕРЫ
+----------------------------- */
 
-async function start() {
-
-  if (starting || running || stopping) return;
-
-  hideScanIndicator();
+async function startCamera() {
+  if (busy || running || stopping) return;
 
   if (!window.Html5Qrcode) {
-    setStatus(
-      'Библиотека сканирования не загрузилась. ' +
-      'Проверь интернет.'
-    );
+    setStatus('Библиотека сканирования не загрузилась.');
     return;
   }
 
-  starting = true;
+  busy = true;
   scanCompleted = false;
+  lastScan = null;
+
+  const session = ++scanSession;
 
   el('start').disabled = true;
   el('result-panel').hidden = true;
 
-  lastScan = null;
+  hideIndicator();
+  updateModeButtons();
 
   try {
-
     if (!qr) {
-
       const enabledFormats = formats
         .map(name =>
           window.Html5QrcodeSupportedFormats?.[name]
         )
-        .filter(x => x !== undefined);
+        .filter(value => value !== undefined);
 
       qr = new Html5Qrcode('reader', {
+        formatsToSupport: enabledFormats,
 
-        ...(enabledFormats.length
-          ? { formatsToSupport: enabledFormats }
-          : {}),
-
-        // Нативный декодер используем,
-        // если он доступен в браузере.
-        useBarCodeDetectorIfSupported: true
-
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
       });
+    }
 
+    const settings = {
+      fps: 15,
+      disableFlip: true,
+
+      videoConstraints: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+
+    // Прицел ограничивает реальную область
+    // декодирования, а не только рисует рамку.
+    if (mode === 'aim') {
+      settings.qrbox = aimBox;
     }
 
     await qr.start(
-
       { facingMode: 'environment' },
-
-      {
-        fps: 15,
-        disableFlip: true,
-
-        videoConstraints: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      },
+      settings,
 
       (text, result) => {
-
-        if (scanCompleted) return;
+        if (
+          session !== scanSession ||
+          scanCompleted
+        ) return;
 
         scanCompleted = true;
+        showIndicator();
+        showResult(text, result);
 
-        // Показываем жёлтую рамку.
-        showScanIndicator();
-
-        // Вибрация, если поддерживается.
         try {
           navigator.vibrate?.(100);
-        } catch (e) {
-          console.log('Вибрация недоступна');
-        }
+        } catch (e) {}
 
-        // Сохраняем результат для проверки.
-        showScan(text, result);
-
-        // Не останавливаем камеру мгновенно:
-        // сначала показываем рамку 700 мс.
         (async () => {
-
-          while (starting) {
-            await delay(30);
-          }
-
           await delay(700);
 
-          await stop();
+          if (session !== scanSession) return;
 
-          hideScanIndicator();
-
+          await stopCamera();
+          hideIndicator();
         })();
-
       }
-
     );
 
     running = true;
-    stopButtons(true);
+    updateCameraButtons();
+    showTorchButton();
 
-    detectTorch();
-
-    // Пробуем включить непрерывный
-    // автофокус, если он поддерживается.
+    // Автофокус, если поддерживается.
     try {
-
-      const capabilities =
+      const caps =
         qr.getRunningTrackCapabilities();
 
-      if (
-        capabilities.focusMode?.includes(
-          'continuous'
-        )
-      ) {
-
+      if (caps.focusMode?.includes('continuous')) {
         await qr.applyVideoConstraints({
-          advanced: [
-            { focusMode: 'continuous' }
-          ]
+          advanced: [{ focusMode: 'continuous' }]
         });
-
       }
-
     } catch (e) {
-      console.log(
-        'Управление автофокусом недоступно:',
-        e
-      );
+      console.log('Автофокус:', e);
     }
 
-    // Не перезаписываем статус, если
-    // код уже считался во время запуска.
     if (!scanCompleted) {
       setStatus(
-        'Наведи камеру на QR или заводской штрихкод.'
+        mode === 'aim'
+          ? '🎯 Наведи нужный код внутрь прицела.'
+          : 'Поиск кодов по всему кадру.'
       );
     }
 
   } catch (e) {
-
     setStatus(
-      'Не удалось открыть камеру: ' +
-      String(e?.message || e) +
-      '. Можно ввести серийник вручную.'
+      'Ошибка запуска камеры: ' +
+      String(e?.message || e)
     );
 
-    hideScanIndicator();
-
   } finally {
-
-    starting = false;
+    busy = false;
     el('start').disabled = false;
-
+    updateModeButtons();
   }
 }
 
-/* =====================================
-   СОБЫТИЯ КНОПОК
-===================================== */
+/* -----------------------------
+   КНОПКИ
+----------------------------- */
 
-el('start').onclick = start;
+el('start').onclick = startCamera;
 
 el('stop').onclick = async () => {
-  await stop();
-  hideScanIndicator();
+  await stopCamera();
+  hideIndicator();
   setStatus('Камера остановлена.');
 };
 
 el('rescan').onclick = async () => {
+  if (busy) return;
 
-  el('result-panel').hidden = true;
-
-  await stop();
-
-  hideScanIndicator();
-
-  await start();
+  await stopCamera();
+  hideIndicator();
+  await startCamera();
 };
 
 el('apply').onclick = () => {
-
   if (!lastScan) return;
 
-  if (
-    lastScan.text.length < 3 ||
-    lastScan.text.length > 100
-  ) {
+  const s = lastScan.text;
+
+  if (s.length < 3 || s.length > 100) {
     alert('Проверь длину серийного номера.');
     return;
   }
 
-  el('serial').value = lastScan.text;
-
+  el('serial').value = s;
   el('result-panel').hidden = true;
 
-  setStatus(
-    'Значение перенесено. ' +
-    'При необходимости исправь серийник вручную.'
-  );
-
+  setStatus('Серийный номер перенесён.');
   el('serial').focus();
 };
 
-/* =====================================
+/* -----------------------------
    ОТПРАВКА В TELEGRAM
-===================================== */
+----------------------------- */
 
 el('save').onclick = async () => {
-
-  const serial =
-    el('serial').value.trim();
+  const serial = el('serial').value.trim();
 
   if (serial.length < 3) {
-    alert(
-      'Укажи серийный номер (минимум 3 символа)'
-    );
+    alert('Укажи серийный номер.');
     return;
   }
 
-  if (
-    !tg ||
-    typeof tg.sendData !== 'function'
-  ) {
-    alert(
-      'Открой сканер через кнопку ' +
-      'в личном чате с Telegram-ботом.'
-    );
+  if (!tg || typeof tg.sendData !== 'function') {
+    alert('Открой сканер через Telegram-бота.');
     return;
   }
 
-  await stop();
+  await stopCamera();
 
-  const brand =
-    el('brand').value;
-
-  const modelDetail =
-    el('model').value.trim();
+  const brand = el('brand').value;
+  const modelDetail = el('model').value.trim();
 
   const model = (
     brand + ' ' + modelDetail
   ).trim();
 
-  const data = JSON.stringify({
+  tg.sendData(JSON.stringify({
     action: 'add_asset',
     serial,
     type: el('type').value,
     model,
     room: el('room').value.trim()
-  });
-
-  tg.sendData(data);
+  }));
 };
 
 </script>
-
 </body>
 </html>
