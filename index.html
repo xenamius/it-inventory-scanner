@@ -3,43 +3,183 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1">
+
 <title>IT Inventory — сканер</title>
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <style>
-:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}
-*{box-sizing:border-box}
-body{margin:0 auto;background:#11151a;color:#f0f3f5;padding:18px;max-width:560px}
-h1{font-size:23px;margin:6px 0}
-p{color:#aab4be;font-size:14px;margin:0 0 18px}
-.card{background:#1c232b;border:1px solid #36414d;border-radius:14px;padding:15px;margin-bottom:15px}
-label{display:block;margin:11px 0 5px;font-weight:600;font-size:13px;color:#d1dae1}
-input,select,textarea{width:100%;background:#11171d;border:1px solid #48535f;border-radius:10px;color:#fff;padding:12px;font-size:16px}
-textarea{resize:vertical;min-height:72px;overflow-wrap:anywhere}
-button{font:600 16px system-ui;border:0;border-radius:11px;padding:13px 16px;width:100%;cursor:pointer;background:#4a89d1;color:white;margin:5px 0}
-button.secondary{background:#34404c}
-button:disabled{opacity:.5;cursor:not-allowed}
-#reader{overflow:hidden;border-radius:12px;background:#080b0f}
-#status,#scan-note{font-size:13px;color:#aab4be;min-height:18px;margin:8px 0}
-small{color:#aab4be;display:block;margin-top:8px}
-#result-panel{border:1px solid #526e87;border-radius:12px;padding:12px;margin-top:12px;background:#16232e}
-#format{font-weight:700;color:#9bc6ff}
-#warn{color:#f9cb84;font-size:13px;margin-top:8px}
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  background: #11151a;
+  color: #f0f3f5;
+  padding: 18px;
+  max-width: 560px;
+}
+
+h1 {
+  font-size: 23px;
+  margin: 6px 0;
+}
+
+p {
+  color: #aab4be;
+  font-size: 14px;
+  margin: 0 0 18px;
+}
+
+.card {
+  background: #1c232b;
+  border: 1px solid #36414d;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin: 11px 0 5px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #d1dae1;
+}
+
+input, select, textarea {
+  width: 100%;
+  background: #11171d;
+  border: 1px solid #48535f;
+  border-radius: 10px;
+  color: #fff;
+  padding: 12px;
+  font-size: 16px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 72px;
+  overflow-wrap: anywhere;
+}
+
+button {
+  font: 600 16px system-ui;
+  border: 0;
+  border-radius: 11px;
+  padding: 13px 16px;
+  width: 100%;
+  cursor: pointer;
+  background: #4a89d1;
+  color: white;
+  margin: 5px 0;
+}
+
+button.secondary {
+  background: #34404c;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+#reader {
+  overflow: hidden;
+  border-radius: 12px;
+  background: #080b0f;
+  position: relative;
+  transition: outline-color .12s, box-shadow .12s;
+}
+
+/* Жёлтая рамка после успешного сканирования */
+#reader.scan-success {
+  outline: 4px solid #ffcc00;
+  outline-offset: -4px;
+  box-shadow: 0 0 22px rgba(255, 204, 0, .55);
+}
+
+#scan-indicator {
+  display: none;
+  background: #ffcc00;
+  color: #111;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+#scan-indicator.visible {
+  display: block;
+}
+
+#status, #scan-note {
+  font-size: 13px;
+  color: #aab4be;
+  min-height: 18px;
+  margin: 8px 0;
+}
+
+small {
+  color: #aab4be;
+  display: block;
+  margin-top: 8px;
+}
+
+#result-panel {
+  border: 1px solid #526e87;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #16232e;
+}
+
+#format {
+  font-weight: 700;
+  color: #9bc6ff;
+}
+
+#warn {
+  color: #f9cb84;
+  font-size: 13px;
+  margin-top: 8px;
+}
 </style>
 </head>
+
 <body>
 
 <h1>📷 IT Inventory</h1>
 <p>Серийные номера · штрихкоды и QR-коды</p>
 
 <div class="card">
+
   <div id="reader"></div>
 
-  <button id="start">Запустить камеру</button>
-  <button id="stop" class="secondary" hidden>Остановить камеру</button>
-  <button id="torch" class="secondary">
-  🔦 Включить фонарик
+  <div id="scan-indicator">
+    ✓ Код распознан!
+  </div>
+
+  <button id="start">
+    Запустить камеру
+  </button>
+
+  <button id="stop" class="secondary" hidden>
+    Остановить камеру
+  </button>
+
+  <button id="torch" class="secondary" hidden disabled>
+    🔦 Включить фонарик
   </button>
 
   <div id="status" role="status">
@@ -47,29 +187,44 @@ small{color:#aab4be;display:block;margin-top:8px}
   </div>
 
   <div id="result-panel" hidden>
+
     <div>
-      Формат: <span id="format">—</span>
+      Формат:
+      <span id="format">—</span>
     </div>
 
-    <label for="raw">Считанные данные (без изменений)</label>
+    <label for="raw">
+      Считанные данные (без изменений)
+    </label>
+
     <textarea id="raw" readonly></textarea>
 
     <div id="warn"></div>
 
-    <button id="apply">Использовать как серийный номер</button>
-    <button id="rescan" class="secondary">Сканировать заново</button>
+    <button id="apply">
+      Использовать как серийный номер
+    </button>
+
+    <button id="rescan" class="secondary">
+      Сканировать заново
+    </button>
+
   </div>
 
   <small>
-    Проверь, что считан именно S/N, а не артикул,
-    модель или соседний код. Буквы из серийника
-    автоматически не удаляются.
+    Проверь, что считан именно S/N,
+    а не артикул, модель или соседний код.
+    Буквы автоматически не удаляются.
   </small>
+
 </div>
 
 <div class="card">
 
-  <label for="serial">Серийный номер *</label>
+  <label for="serial">
+    Серийный номер *
+  </label>
+
   <input
     id="serial"
     placeholder="Сканируй или введи вручную"
@@ -78,7 +233,10 @@ small{color:#aab4be;display:block;margin-top:8px}
     required
   >
 
-  <label for="type">Тип оборудования</label>
+  <label for="type">
+    Тип оборудования
+  </label>
+
   <select id="type">
     <option>ПК</option>
     <option>Монитор</option>
@@ -89,7 +247,10 @@ small{color:#aab4be;display:block;margin-top:8px}
     <option>Другое</option>
   </select>
 
-  <label for="brand">Производитель *</label>
+  <label for="brand">
+    Производитель *
+  </label>
+
   <select id="brand">
     <option value="DELL">DELL</option>
     <option value="HP">HP</option>
@@ -98,21 +259,29 @@ small{color:#aab4be;display:block;margin-top:8px}
     <option value="ASUS">ASUS</option>
   </select>
 
-  <label for="model">Модель (необязательно)</label>
+  <label for="model">
+    Модель (необязательно)
+  </label>
+
   <input
     id="model"
     placeholder="Например, Latitude 5420"
     maxlength="100"
   >
 
-  <label for="room">Кабинет</label>
+  <label for="room">
+    Кабинет
+  </label>
+
   <input
     id="room"
     placeholder="Например, 305"
     maxlength="50"
   >
 
-  <button id="save">✅ Сохранить в общий журнал</button>
+  <button id="save">
+    ✅ Сохранить в общий журнал
+  </button>
 
   <small>
     После сохранения бот пришлёт подтверждение.
@@ -125,81 +294,23 @@ small{color:#aab4be;display:block;margin-top:8px}
 'use strict';
 
 const tg = window.Telegram?.WebApp;
+
 tg?.ready();
 tg?.expand();
 
 const el = id => document.getElementById(id);
-const setStatus = s => el('status').textContent = s;
+
+const setStatus = text => {
+  el('status').textContent = text;
+};
 
 let qr = null;
 let running = false;
 let starting = false;
 let stopping = false;
 let lastScan = null;
-  
 let torchEnabled = false;
-
-function updateTorchButton() {
-  const button = el('torch');
-
-  button.textContent = torchEnabled
-    ? '🔦 Выключить фонарик'
-    : '🔦 Включить фонарик';
-}
-
-
-function detectTorch() {
-  const button = el('torch');
-
-  button.hidden = false;
-  torchEnabled = false;
-  updateTorchButton();
-
-  if (!qr || !running) {
-    button.disabled = true;
-    return;
-  }
-
-  button.disabled = false;
-
-  try {
-    const caps = qr.getRunningTrackCapabilities();
-
-    console.log('Torch capabilities:', caps.torch);
-
-  } catch (e) {
-    console.log('Не удалось проверить фонарик:', e);
-  }
-}
-
-
-el('torch').onclick = async () => {
-  if (!qr || !running) return;
-
-  const button = el('torch');
-  const nextState = !torchEnabled;
-
-  button.disabled = true;
-
-  try {
-    await qr.applyVideoConstraints({
-      advanced: [{ torch: nextState }]
-    });
-
-    torchEnabled = nextState;
-    updateTorchButton();
-
-  } catch (e) {
-    console.error('Ошибка фонарика:', e);
-    setStatus(
-      'Не удалось переключить фонарик. ' +
-      'Telegram может ограничивать эту функцию.'
-    );
-  } finally {
-    button.disabled = false;
-  }
-};
-
+let scanCompleted = false;
 
 const formats = [
   'QR_CODE',
@@ -209,10 +320,113 @@ const formats = [
   'DATA_MATRIX'
 ];
 
+/* =====================================
+   ЖЁЛТАЯ РАМКА
+===================================== */
+
+function showScanIndicator() {
+  el('reader').classList.add('scan-success');
+  el('scan-indicator').classList.add('visible');
+}
+
+function hideScanIndicator() {
+  el('reader').classList.remove('scan-success');
+  el('scan-indicator').classList.remove('visible');
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/* =====================================
+   КНОПКИ КАМЕРЫ
+===================================== */
+
 function stopButtons(isRunning) {
   el('start').hidden = isRunning;
   el('stop').hidden = !isRunning;
 }
+
+/* =====================================
+   ФОНАРИК
+===================================== */
+
+function updateTorchButton() {
+  const button = el('torch');
+
+  button.textContent = torchEnabled
+    ? '🔦 Выключить фонарик'
+    : '🔦 Включить фонарик';
+}
+
+function detectTorch() {
+  const button = el('torch');
+
+  torchEnabled = false;
+  updateTorchButton();
+
+  if (!qr || !running) {
+    button.hidden = true;
+    button.disabled = true;
+    return;
+  }
+
+  // На iPhone внутри Telegram сведения о
+  // поддержке фонарика могут отсутствовать,
+  // хотя само переключение работает.
+  button.hidden = false;
+  button.disabled = false;
+
+  try {
+    const caps = qr.getRunningTrackCapabilities();
+
+    console.log(
+      'Поддержка фонарика:',
+      caps.torch
+    );
+
+  } catch (e) {
+    console.log(
+      'Проверка фонарика недоступна:',
+      e
+    );
+  }
+}
+
+el('torch').onclick = async () => {
+  if (!qr || !running || stopping) return;
+
+  const button = el('torch');
+  const nextState = !torchEnabled;
+
+  button.disabled = true;
+
+  try {
+    await qr.applyVideoConstraints({
+      advanced: [
+        { torch: nextState }
+      ]
+    });
+
+    torchEnabled = nextState;
+    updateTorchButton();
+
+  } catch (e) {
+    console.error('Ошибка фонарика:', e);
+
+    setStatus(
+      'Не удалось переключить фонарик. ' +
+      'Telegram может ограничивать эту функцию.'
+    );
+
+  } finally {
+    button.disabled = false;
+  }
+};
+
+/* =====================================
+   ОСТАНОВКА КАМЕРЫ
+===================================== */
 
 async function stop() {
   if (!qr || !running || stopping) return;
@@ -221,22 +435,29 @@ async function stop() {
 
   try {
     await qr.stop();
+
   } catch (e) {
     console.warn('Camera stop:', e);
   }
 
   running = false;
   stopping = false;
+
   stopButtons(false);
 
   torchEnabled = false;
+
   el('torch').hidden = true;
+  el('torch').disabled = true;
+
   updateTorchButton();
-  }
-  
+}
+
+/* =====================================
+   РЕЗУЛЬТАТ СКАНИРОВАНИЯ
+===================================== */
 
 function showScan(text, result) {
-
   const format =
     result?.result?.format?.formatName ||
     'Не определён';
@@ -248,6 +469,7 @@ function showScan(text, result) {
 
   el('format').textContent = format;
   el('raw').value = lastScan.text;
+
   el('result-panel').hidden = false;
 
   const s = lastScan.text;
@@ -256,7 +478,7 @@ function showScan(text, result) {
     /[\r\n\t\x00-\x1F]/.test(s) ||
     s.length > 100 ||
     /https?:\/\//i.test(s) ||
-    /\]([A-Za-z])\d/.test(s.slice(0,3));
+    /\]([A-Za-z])\d/.test(s.slice(0, 3));
 
   el('warn').textContent = suspicious
     ? '⚠️ В коде есть дополнительные данные или служебные символы. Проверь серийник перед сохранением.'
@@ -270,25 +492,32 @@ function showScan(text, result) {
     format +
     '. Подтверди содержимое ниже.'
   );
-
-  // Не удаляем необычные символы автоматически.
 }
+
+/* =====================================
+   ЗАПУСК СКАНЕРА
+===================================== */
 
 async function start() {
 
-  if (starting || running) return;
+  if (starting || running || stopping) return;
+
+  hideScanIndicator();
 
   if (!window.Html5Qrcode) {
     setStatus(
-      'Библиотека сканирования не загрузилась. Проверь интернет.'
+      'Библиотека сканирования не загрузилась. ' +
+      'Проверь интернет.'
     );
     return;
   }
 
   starting = true;
+  scanCompleted = false;
 
   el('start').disabled = true;
   el('result-panel').hidden = true;
+
   lastScan = null;
 
   try {
@@ -304,73 +533,111 @@ async function start() {
       qr = new Html5Qrcode('reader', {
 
         ...(enabledFormats.length
-          ? {formatsToSupport: enabledFormats}
+          ? { formatsToSupport: enabledFormats }
           : {}),
 
-        // Используем JS-декодер на iPhone и Android.
+        // Нативный декодер используем,
+        // если он доступен в браузере.
         useBarCodeDetectorIfSupported: true
+
       });
 
     }
 
-    let handled = false;
-
     await qr.start(
+
       { facingMode: 'environment' },
+
       {
         fps: 15,
         disableFlip: true,
+
         videoConstraints: {
-        facingMode: "environment",
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       },
 
       (text, result) => {
 
-        if (handled) return;
-        handled = true;
+        if (scanCompleted) return;
 
+        scanCompleted = true;
+
+        // Показываем жёлтую рамку.
+        showScanIndicator();
+
+        // Вибрация, если поддерживается.
+        try {
+          navigator.vibrate?.(100);
+        } catch (e) {
+          console.log('Вибрация недоступна');
+        }
+
+        // Сохраняем результат для проверки.
         showScan(text, result);
 
-        // Останавливаем камеру после завершения запуска.
-        Promise.resolve().then(async () => {
+        // Не останавливаем камеру мгновенно:
+        // сначала показываем рамку 700 мс.
+        (async () => {
 
           while (starting) {
-            await new Promise(
-              r => setTimeout(r, 30)
-            );
+            await delay(30);
           }
+
+          await delay(700);
 
           await stop();
 
-        });
+          hideScanIndicator();
+
+        })();
 
       }
+
     );
 
     running = true;
     stopButtons(true);
+
     detectTorch();
-    
-try {
-  const capabilities = qr.getRunningTrackCapabilities();
 
-  if (capabilities.focusMode?.includes('continuous')) {
-    await qr.applyVideoConstraints({
-      advanced: [{ focusMode: 'continuous' }]
-    });
-  }
+    // Пробуем включить непрерывный
+    // автофокус, если он поддерживается.
+    try {
 
-} catch (e) {
-  console.log('Управление автофокусом недоступно:', e);
-}
+      const capabilities =
+        qr.getRunningTrackCapabilities();
 
+      if (
+        capabilities.focusMode?.includes(
+          'continuous'
+        )
+      ) {
 
-    setStatus(
-      'Наведи камеру на QR или заводской штрихкод.'
-    );
+        await qr.applyVideoConstraints({
+          advanced: [
+            { focusMode: 'continuous' }
+          ]
+        });
+
+      }
+
+    } catch (e) {
+      console.log(
+        'Управление автофокусом недоступно:',
+        e
+      );
+    }
+
+    // Не перезаписываем статус, если
+    // код уже считался во время запуска.
+    if (!scanCompleted) {
+      setStatus(
+        'Наведи камеру на QR или заводской штрихкод.'
+      );
+    }
 
   } catch (e) {
 
@@ -380,6 +647,8 @@ try {
       '. Можно ввести серийник вручную.'
     );
 
+    hideScanIndicator();
+
   } finally {
 
     starting = false;
@@ -388,16 +657,26 @@ try {
   }
 }
 
+/* =====================================
+   СОБЫТИЯ КНОПОК
+===================================== */
+
 el('start').onclick = start;
 
 el('stop').onclick = async () => {
   await stop();
+  hideScanIndicator();
   setStatus('Камера остановлена.');
 };
 
 el('rescan').onclick = async () => {
+
   el('result-panel').hidden = true;
+
   await stop();
+
+  hideScanIndicator();
+
   await start();
 };
 
@@ -414,35 +693,51 @@ el('apply').onclick = () => {
   }
 
   el('serial').value = lastScan.text;
+
   el('result-panel').hidden = true;
 
   setStatus(
-    'Значение перенесено. При необходимости исправь серийник вручную.'
+    'Значение перенесено. ' +
+    'При необходимости исправь серийник вручную.'
   );
 
   el('serial').focus();
 };
 
+/* =====================================
+   ОТПРАВКА В TELEGRAM
+===================================== */
+
 el('save').onclick = async () => {
 
-  const serial = el('serial').value.trim();
+  const serial =
+    el('serial').value.trim();
 
   if (serial.length < 3) {
-    alert('Укажи серийный номер (минимум 3 символа)');
+    alert(
+      'Укажи серийный номер (минимум 3 символа)'
+    );
     return;
   }
 
-  if (!tg || typeof tg.sendData !== 'function') {
+  if (
+    !tg ||
+    typeof tg.sendData !== 'function'
+  ) {
     alert(
-      'Открой сканер через кнопку в личном чате с Telegram-ботом.'
+      'Открой сканер через кнопку ' +
+      'в личном чате с Telegram-ботом.'
     );
     return;
   }
 
   await stop();
 
-  const brand = el('brand').value;
-  const modelDetail = el('model').value.trim();
+  const brand =
+    el('brand').value;
+
+  const modelDetail =
+    el('model').value.trim();
 
   const model = (
     brand + ' ' + modelDetail
@@ -460,5 +755,6 @@ el('save').onclick = async () => {
 };
 
 </script>
+
 </body>
 </html>
