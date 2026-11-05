@@ -472,13 +472,24 @@ function showResult(text, result) {
     result?.result?.format?.formatName ||
     'Не определён';
 
+
+  const rawText = String(text);
+  
+  // Убираем только подтверждённый
+  // служебный префикс GS1-128.
+  const cleanText = rawText.startsWith(']C1')
+    ? rawText.slice(3)
+    : rawText;
+  
   lastScan = {
-    text: String(text),
+    text: cleanText,
+    rawText,
     format
   };
 
+
   el('format').textContent = format;
-  el('raw').value = lastScan.text;
+  el('raw').value = lastScan.rawText;
 
   el('result-panel').hidden = false;
 
