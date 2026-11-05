@@ -474,6 +474,11 @@ function showResult(text, result) {
 
 
   const rawText = String(text);
+  console.log('RAW:', JSON.stringify(rawText));
+  console.log(
+  'CODES:',
+  [...rawText].map(c => c.codePointAt(0).toString(16))
+  );
   
   // Убираем только подтверждённый
   // служебный префикс GS1-128.
