@@ -38,6 +38,9 @@ small{color:#aab4be;display:block;margin-top:8px}
 
   <button id="start">Запустить камеру</button>
   <button id="stop" class="secondary" hidden>Остановить камеру</button>
+  <button id="torch" class="secondary" hidden>
+  🔦 Включить фонарик
+  </button>
 
   <div id="status" role="status">
     Разреши доступ к камере при запросе.
@@ -133,6 +136,64 @@ let running = false;
 let starting = false;
 let stopping = false;
 let lastScan = null;
+  
+let torchEnabled = false;
+
+function updateTorchButton() {
+  const button = el('torch');
+
+  button.textContent = torchEnabled
+    ? '🔦 Выключить фонарик'
+    : '🔦 Включить фонарик';
+}
+
+function detectTorch() {
+  const button = el('torch');
+
+  button.hidden = true;
+  torchEnabled = false;
+  updateTorchButton();
+
+  if (!qr || !running) return;
+
+  try {
+    const caps = qr.getRunningTrackCapabilities();
+
+    if (caps.torch === true) {
+      button.hidden = false;
+    }
+  } catch (e) {
+    console.log('Проверка фонарика:', e);
+  }
+}
+
+el('torch').onclick = async () => {
+  if (!qr || !running) return;
+
+  const button = el('torch');
+  const nextState = !torchEnabled;
+
+  button.disabled = true;
+
+  try {
+    await qr.applyVideoConstraints({
+      advanced: [{ torch: nextState }]
+    });
+
+    torchEnabled = nextState;
+    updateTorchButton();
+
+  } catch (e) {
+    console.error('Ошибка фонарика:', e);
+    setStatus(
+      'Не удалось переключить фонарик. ' +
+      'Telegram может ограничивать эту функцию.'
+    );
+  } finally {
+    button.disabled = false;
+  }
+};
+
 
 const formats = [
   'QR_CODE',
@@ -161,7 +222,12 @@ async function stop() {
   running = false;
   stopping = false;
   stopButtons(false);
-}
+
+  torchEnabled = false;
+  el('torch').hidden = true;
+  updateTorchButton();
+  }
+  
 
 function showScan(text, result) {
 
@@ -280,6 +346,7 @@ async function start() {
 
     running = true;
     stopButtons(true);
+    detectTorch();
     
 try {
   const capabilities = qr.getRunningTrackCapabilities();
