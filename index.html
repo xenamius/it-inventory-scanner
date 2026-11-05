@@ -661,7 +661,7 @@ el('rescan').onclick = async () => {
 el('apply').onclick = () => {
   if (!lastScan) return;
 
-  const s = lastScan.text;
+  const s = lastScan.text.replace(/^\]C1/, '');
 
   if (s.length < 3 || s.length > 100) {
     alert('Проверь длину серийного номера.');
