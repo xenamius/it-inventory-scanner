@@ -280,6 +280,20 @@ async function start() {
 
     running = true;
     stopButtons(true);
+    
+try {
+  const capabilities = qr.getRunningTrackCapabilities();
+
+  if (capabilities.focusMode?.includes('continuous')) {
+    await qr.applyVideoConstraints({
+      advanced: [{ focusMode: 'continuous' }]
+    });
+  }
+
+} catch (e) {
+  console.log('Управление автофокусом недоступно:', e);
+}
+
 
     setStatus(
       'Наведи камеру на QR или заводской штрихкод.'
