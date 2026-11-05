@@ -38,7 +38,7 @@ small{color:#aab4be;display:block;margin-top:8px}
 
   <button id="start">Запустить камеру</button>
   <button id="stop" class="secondary" hidden>Остановить камеру</button>
-  <button id="torch" class="secondary" hidden>
+  <button id="torch" class="secondary">
   🔦 Включить фонарик
   </button>
 
@@ -147,25 +147,31 @@ function updateTorchButton() {
     : '🔦 Включить фонарик';
 }
 
+
 function detectTorch() {
   const button = el('torch');
 
-  button.hidden = true;
+  button.hidden = false;
   torchEnabled = false;
   updateTorchButton();
 
-  if (!qr || !running) return;
+  if (!qr || !running) {
+    button.disabled = true;
+    return;
+  }
+
+  button.disabled = false;
 
   try {
     const caps = qr.getRunningTrackCapabilities();
 
-    if (caps.torch === true) {
-      button.hidden = false;
-    }
+    console.log('Torch capabilities:', caps.torch);
+
   } catch (e) {
-    console.log('Проверка фонарика:', e);
+    console.log('Не удалось проверить фонарик:', e);
   }
 }
+
 
 el('torch').onclick = async () => {
   if (!qr || !running) return;
