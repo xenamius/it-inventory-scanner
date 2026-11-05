@@ -494,11 +494,18 @@ function showResult(text, result) {
 
 
   el('format').textContent = format;
-  el('raw').value = lastScan.rawText;
+  el('raw').value = lastScan.text;
 
   el('result-panel').hidden = false;
 
   const s = lastScan.text;
+  const wasCleaned = lastScan.rawText !== lastScan.text;
+
+  if (wasCleaned) {
+  el('warn').textContent =
+    'Исходный код: ' + lastScan.rawText +
+    ' | Серийник: ' + lastScan.text;
+  }
 
   const suspicious =
     /[\r\n\t\x00-\x1F]/.test(s) ||
