@@ -474,6 +474,12 @@ function showResult(text, result) {
 
 
   const rawText = String(text);
+  alert(
+  'Версия: TEST-01\n' +
+  'Получено: ' + JSON.stringify(rawText) + '\n' +
+  'Символы: ' +
+  [...rawText].map(c => c.codePointAt(0).toString(16)).join(' ')
+);
   console.log('RAW:', JSON.stringify(rawText));
   console.log(
   'CODES:',
