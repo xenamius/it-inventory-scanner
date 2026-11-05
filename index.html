@@ -243,7 +243,7 @@ async function start() {
           : {}),
 
         // Используем JS-декодер на iPhone и Android.
-        useBarCodeDetectorIfSupported: false
+        useBarCodeDetectorIfSupported: true
       });
 
     }
@@ -252,7 +252,15 @@ async function start() {
 
     await qr.start(
       { facingMode: 'environment' },
-      { fps: 12 },
+      {
+        fps: 15,
+        disableFlip: true,
+        videoConstraints: {
+        facingMode: "environment",
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+      },
 
       (text, result) => {
 
